@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG to SVG: NFT Animation (FINAL)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: #eee; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: #4CAF50; margin-bottom: 10px; }
+        .note { text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px; }
+
+        .controls {
+            background: #2a2a2a; padding: 20px; border-radius: 12px;
+            margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .control-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 14px; color: #aaa; }
+        input[type="file"] { width: 100%; padding: 10px; background: #3a3a3a; border: 1px solid #555; border-radius: 6px; color: #fff; }
+        input[type="number"], input[type="range"] { width: 100%; padding: 8px; background: #3a3a3a; border: 1px solid #555; border-radius: 6px; color: #fff; }
+        input[type="range"] { height: 36px; padding: 0; }
+        .range-value { margin-left: 10px; color: #4CAF50; font-weight: bold; }
+        .buttons { display: flex; gap: 12px; margin-top: 20px; }
+        button { flex: 1; padding: 14px; background: #4CAF50; border: none; border-radius: 6px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; }
+        button:hover:not(:disabled) { background: #45a049; }
+        button:disabled { background: #666; cursor: not-allowed; opacity: 0.6; }
+
+        .preview { background: #000; border-radius: 12px; min-height: 400px; padding: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .preview object { width: 100%; height: 100%; border: 1px solid #333; border-radius: 6px; }
+
+        .status { text-align: center; padding: 12px; background: #2a2a2a; border-radius: 6px; font-size: 14px; }
+        .info { color: #4CAF50; font-weight: bold; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PNG to Animated SVG (NFT)</h1>
+        <p class="note">Upload frames → Set <strong>Intro</strong> (once) + <strong>Loop</strong> (forever) → <strong>NO SCROLLING, RESETS ON LOAD</strong></p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Upload PNG Frames (in order):</label>
+                <input type="file" id="fileInput" accept="image/png" multiple>
+                <div style="font-size: 12px; color: #888; margin-top: 4px;">Name like: frame1.png, frame2.png, frame10.png</div>
+            </div>
+
+            <div class="control-group">
+                <label>Frame Rate: <span class="range-value" id="fpsValue">12</span> FPS</label>
+                <input type="range" id="fps" min="1" max="60" value="12">
+            </div>
+
+            <div class="control-group">
+                <label>Intro Range (plays once):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="introStart" min="1" value="1" style="flex:1;">
+                    <span style="align-self: center;">to</span>
+                    <input type="number" id="introEnd" min="1" value="5" style="flex:1;">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Loop Range (loops forever):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="loopStart" min="1" value="6" style="flex:1;">
+                    <span style="align-self: center;">to</span>
+                    <input type="number" id="loopEnd" min="1" value="10" style="flex:1;">
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button id="generateBtn" disabled>Generate SVG</button>
+                <button id="downloadBtn" disabled>Download SVG</button>
+            </div>
+        </div>
+
+        <div class="preview" id="preview">
+            <p style="color: #666;">Preview appears after Generate</p>
+        </div>
+
+        <div class="status" id="statusText">Upload frames to begin</div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const fileInput = $('fileInput');
+        const generateBtn = $('generateBtn');
+        const downloadBtn = $('downloadBtn');
+        const preview = $('preview');
+        const statusText = $('statusText');
+        const fpsInput = $('fps');
+        const fpsValue = $('fpsValue');
+        const introStart = $('introStart');
+        const introEnd = $('introEnd');
+        const loopStart = $('loopStart');
+        const loopEnd = $('loopEnd');
+
+        let frames = [];
+        let svgContent = '';
+
+        fpsInput.addEventListener('input', () => {
+            fpsValue.textContent = fpsInput.value;
+        });
+
+        fileInput.addEventListener('change', async () => {
+            const files = Array.from(fileInput.files).filter(f => f.type === 'image/png');
+            if (!files.length) return;
+
+            files.sort((a, b) => {
+                const aNum = a.name.match(/(\d+)/)?.[0] || '0';
+                const bNum = b.name.match(/(\d+)/)?.[0] || '0';
+                return parseInt(aNum) - parseInt(bNum);
+            });
+
+            frames = [];
+            setStatus('Loading frames...', 'info');
+            generateBtn.disabled = true;
+            downloadBtn.disabled = true;
+
+            let w = null, h = null;
+
+            for (const file of files) {
+                const dataURL = await new Promise(r => {
+                    const reader = new FileReader();
+                    reader.onload = () => r(reader.result);
+                    reader.readAsDataURL(file);
+                });
+                const img = new Image();
+                const size = await new Promise((res, rej) => {
+                    img.onload = () => res({w: img.width, h: img.height});
+                    img.onerror = rej;
+                    img.src = dataURL;
+                });
+
+                if (w === null) { w = size.w; h = size.h; }
+                else if (size.w !== w || size.h !== h) {
+                    setStatus(`Size mismatch: ${file.name}`, 'error');
+                    return;
+                }
+
+                frames.push({data: dataURL, w, h});
+            }
+
+            [introStart, introEnd, loopStart, loopEnd].forEach(input => input.max = frames.length);
+            setStatus(`Loaded ${frames.length} frames. Set ranges.`, 'info');
+            validateRanges();
+        });
+
+        function validateRanges() {
+            try {
+                const iS = parseInt(introStart.value);
+                const iE = parseInt(introEnd.value);
+                const lS = parseInt(loopStart.value);
+                const lE = parseInt(loopEnd.value);
+                const total = frames.length;
+
+                if (iS < 1 || iE > total || iS > iE) throw new Error("Invalid intro");
+                if (lS < 1 || lE > total || lS > lE) throw new Error("Invalid loop");
+                if (iE >= lS) throw new Error("Intro must end before loop");
+
+                generateBtn.disabled = false;
+                setStatus('Ready to generate', 'info');
+            } catch (e) {
+                generateBtn.disabled = true;
+                setStatus(e.message, 'error');
+            }
+        }
+
+        [introStart, introEnd, loopStart, loopEnd].forEach(input => input.addEventListener('input', validateRanges));
+
+        function setStatus(msg, type = 'info') {
+            statusText.textContent = msg;
+            statusText.className = 'status ' + type;
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            generateBtn.disabled = true;
+            downloadBtn.disabled = true;
+            setStatus('Building...', 'info');
+
+            const fps = parseInt(fpsInput.value);
+            const frameTime = 1 / fps;
+
+            const iS = parseInt(introStart.value) - 1;
+            const iE = parseInt(introEnd.value) - 1;
+            const lS = parseInt(loopStart.value) - 1;
+            const lE = parseInt(loopEnd.value) - 1;
+
+            const w = frames[0].w;
+            const h = frames[0].h;
+            const totalW = w * frames.length;
+
+            // Build sprite sheet
+            const canvas = document.createElement('canvas');
+            canvas.width = totalW;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            for (let i = 0; i < frames.length; i++) {
+                await new Promise(res => {
+                    img.onload = () => { ctx.drawImage(img, i * w, 0); res(); };
+                    img.src = frames[i].data;
+                });
+            }
+            const spriteData = canvas.toDataURL('image/png');
+
+            // Build values
+            const introValues = [];
+            for (let i = iS; i <= iE; i++) {
+                introValues.push(-i * w);
+            }
+
+            const loopValues = [];
+            for (let i = lS; i <= lE; i++) {
+                loopValues.push(-i * w);
+            }
+
+            const introDur = (iE - iS + 1) * frameTime;
+            const loopDur = (lE - lS + 1) * frameTime;
+
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 ${w} ${h}"
+     width="100%" height="100%"
+     preserveAspectRatio="xMidYMid meet"
+     overflow="hidden">
+  <defs>
+    <clipPath id="clip"><rect width="${w}" height="${h}"/></clipPath>
+  </defs>
+  <image href="${spriteData}"
+         width="${totalW}" height="${h}"
+         clip-path="url(#clip)"
+         x="0" y="0"
+         style="image-rendering:pixelated">
+    <!-- Intro: plays once -->
+    <animate id="introAnim"
+             attributeName="x"
+             values="${introValues.join(';')}"
+             dur="${introDur}s"
+             calcMode="discrete"
+             restart="always"
+             fill="remove"/>
+    <!-- Loop: starts after intro, loops forever -->
+    <animate attributeName="x"
+             values="${loopValues.join(';')}"
+             begin="introAnim.end"
+             dur="${loopDur}s"
+             calcMode="discrete"
+             restart="always"
+             repeatCount="indefinite"/>
+  </image>
+</svg>`.trim();
+
+            svgContent = svg;
+
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            preview.innerHTML = `<object type="image/svg+xml" data="${url}" style="width:100%;height:100%;"></object>`;
+
+            downloadBtn.disabled = false;
+            setStatus('SVG ready! Intro resets on load → Loop forever → NO SCROLLING', 'info');
+            generateBtn.disabled = false;
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'animation.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus('Downloaded!', 'info');
+        });
+    </script>
+</body>
+</html>

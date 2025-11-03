@@ -48,3 +48,14 @@ A **zero-dependency**, **offline-first** web tool that converts **PNG frame sequ
 ---
 
 ## Example Use Case
+
+> **Like an animated GIF:**  
+> A man walks into a room, sits down, and takes **3 sips of coffee** → picks up a newspaper → **flicks through pages in an infinite loop**.  
+> *Refresh the page to restart the full animation.*
+
+### How to set it up:
+```text
+Intro 1: frames 1–5   → Walk in & sit (1×)
+Intro 2: frames 6–8   → Sip coffee (3×)
+Intro 3: frames 9–12  → Pick up newspaper (1×)
+Loop:    frames 13–18 → Page flip (forever)

@@ -44,11 +44,15 @@ footer a{color:#4CAF50;text-decoration:none}
   .toolsRow{flex-direction:column}
   .btns{flex-direction:column}
 }
+.title-image {
+  text-align: center;
+  margin: 16px 0 24px;
+}
 .title-img {
   max-width: 100%;
-  width: 480px;           /* Big on desktop */
+  width: 480px;
   height: auto;
-  max-height: 140px;      /* Prevent stretching */
+  max-height: 140px;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0,0,0,.7);
   display: block;
@@ -60,7 +64,18 @@ footer a{color:#4CAF50;text-decoration:none}
 .title-img:hover {
   transform: scale(1.02);
 }
-  @media (max-width: 720px) {
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+@media (max-width: 720px) {
   .title-img {
     width: 100%;
     max-width: 320px;
@@ -111,10 +126,7 @@ footer a{color:#4CAF50;text-decoration:none}
 <div class="wrap">
   <!-- SVG LOGO TITLE (replaces <h1>) -->
 <div class="title-image" role="heading" aria-level="1">
-  <img src="svganimator-logo.svg" 
-       alt="SVG Animator – On-Chain Animation Tool" 
-       class="title-img">
-  <!-- Screen reader / SEO fallback -->
+  <img src="svganimator-logo.svg" alt="SVG Animator – On-Chain Animation Tool" class="title-img">
   <span class="sr-only">SVG Animator</span>
 </div>
   <!-- TOOL INTRO + VIDEO -->

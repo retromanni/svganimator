@@ -44,28 +44,29 @@ footer a{color:#4CAF50;text-decoration:none}
   .toolsRow{flex-direction:column}
   .btns{flex-direction:column}
 }
-  .title-image {
-  text-align: center;
-  margin: 16px 0 24px;
-}
 .title-img {
   max-width: 100%;
+  width: 480px;           /* Big on desktop */
   height: auto;
-  max-height: 110px;        /* Adjust if needed */
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.6);
-  display: inline-block;
-  background: #0f0f10;      /* Dark background for transparent SVG */
-  padding: 8px;
+  max-height: 140px;      /* Prevent stretching */
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.7);
+  display: block;
+  margin: 0 auto;
+  background: #0f0f10;
+  padding: 12px;
+  transition: transform 0.2s ease;
 }
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
-  border: 0;
+.title-img:hover {
+  transform: scale(1.02);
+}
+  @media (max-width: 720px) {
+  .title-img {
+    width: 100%;
+    max-width: 320px;
+    padding: 10px;
+    border-radius: 12px;
+  }
 }
 </style>
 </head>

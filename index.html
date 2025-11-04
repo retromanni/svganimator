@@ -44,11 +44,41 @@ footer a{color:#4CAF50;text-decoration:none}
   .toolsRow{flex-direction:column}
   .btns{flex-direction:column}
 }
+  .title-image {
+  text-align: center;
+  margin: 16px 0 24px;
+}
+.title-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 110px;        /* Adjust if needed */
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.6);
+  display: inline-block;
+  background: #0f0f10;      /* Dark background for transparent SVG */
+  padding: 8px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>SVG Animator</h1>
+  <!-- SVG LOGO TITLE (replaces <h1>) -->
+<div class="title-image" role="heading" aria-level="1">
+  <img src="https://raw.githubusercontent.com/retromanni/svganimator/main/svganimator-logo.svg" 
+       alt="SVG Animator – On-Chain Animation Tool" 
+       class="title-img">
+  <!-- Screen reader / SEO fallback -->
+  <span class="sr-only">SVG Animator</span>
+</div>
   <p class="note">Upload PNG frames, set FPS, choose a tool. Tool 1 = intros then required final loop. Tool 2 = playlist (no final loop).</p>
 
   <div class="card">

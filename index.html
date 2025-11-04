@@ -119,6 +119,36 @@ footer a{color:#4CAF50;text-decoration:none}
     border-radius: 12px;
   }
 }
+  .donation-box {
+  margin: 24px auto;
+  max-width: 800px;
+  text-align: center;
+  font-size: 15px;
+  color: #ccc;
+  line-height: 1.6;
+}
+.donation-box p {
+  margin: 0;
+}
+.donation-box code.address {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #4CAF50;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  margin: 8px 0;
+  cursor: pointer;
+  user-select: all;
+  transition: background 0.2s, transform 0.1s;
+}
+.donation-box code.address:hover {
+  background: #2a2a2a;
+}
+.donation-box code.address:active {
+  transform: scale(0.98);
+}
 </style>
 </head>
 <body>
@@ -149,7 +179,13 @@ footer a{color:#4CAF50;text-decoration:none}
 </div>
 <!-- END INTRO + VIDEO -->
   <p class="note">Upload PNG frames, set FPS, choose a tool. Tool 1 = intros then required final loop. Tool 2 = playlist (no final loop).</p>
-
+<!-- DONATION REQUEST (Personal, No JS) -->
+<div class="donation-box">
+  <p>
+    Love this tool? Help <strong>me</strong> keep building with a donation in <strong>XTZ</strong>!<br>
+    <code class="address" title="Click to copy">tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V</code>
+  </p>
+</div>
   <div class="card">
     <!-- Upload + Global FPS -->
     <div class="row" style="gap:16px">

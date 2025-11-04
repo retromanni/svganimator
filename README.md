@@ -1,61 +1,56 @@
-# PNG to Animated SVG (NFT Animator)
+# SVG Animator — On-Chain NFT Animation Tool
 
-A **zero-dependency**, **offline-first** web tool that converts **PNG frame sequences** into a **single animated SVG** — perfect for **NFTs**, **pixel art**, and **web animations**.
+**Upload PNG frames → Build intros + final loop (Tool 1) or playlist (Tool 2) → Export animated SVG**  
+**Fully on-chain. Zero dependencies. Mint-ready.**
+
+[![Live App](https://img.shields.io/badge/Live%20App-Open%20Tool-4CAF50?style=for-the-badge&logo=html5)](https://retromanni.github.io/svganimator/)  
+[![GitHub](https://img.shields.io/github/stars/retromanni/svganimator?style=social)](https://github.com/retromanni/svganimator)  
+[![Follow @retro_manni](https://img.shields.io/twitter/follow/retro_manni?label=%40retro_manni&style=social)](https://x.com/retro_manni)
+
+---
+
+## Live Tool
+
+**Use it now**: [https://retromanni.github.io/svganimator/](https://retromanni.github.io/svganimator/)
+
+No install. Works offline. Open in any browser.
 
 ---
 
 ## Features
 
-- **Drag & drop** PNG frames (or click to upload)
-- **Unlimited intros** with:
-  - Custom frame range
-  - **Up to 50 repeats** per intro
-  - Enable/disable per intro
-  - Remove any intro
-- **Loop section** (repeats forever)
-- **Pixel-perfect rendering** (`image-rendering: pixelated`)
-- **Live preview** before download
-- **Single SVG file output** (NFT-ready, no external assets)
-- **100% client-side** — no server, no install
+| Feature | Description |
+|--------|-------------|
+| **Two Tools** |  
+| **Tool 1** | Intros (play once) → **Final infinite loop** (required) |
+| **Tool 2** | **Playlist mode** — sequence of sections loops forever |
+| **Per-Segment FPS** | Custom FPS per intro, section, or loop |
+| **Pixel-Perfect** | `image-rendering: pixelated`, `viewBox`-only scaling |
+| **On-Chain Ready** | Single SVG with embedded sprite sheet |
+| **Copy SVG** | One-click clipboard copy for instant minting |
+| **Responsive Preview** | Full animation preview before export |
+| **No Dependencies** | Pure HTML + CSS + JS |
 
 ---
 
 ## How to Use
 
-1. **Prepare your PNGs**  
-   - All same size (e.g., 64x64)
-   - Name sequentially: `frame1.png`, `frame2.png`, ..., `frame10.png`
-
-2. **Open `index.html` in any browser**
-
-3. **Drag & drop** your PNGs
-
-4. Click **"+ Add Intro"** as many times as needed
-
-5. For each intro:
-   - Set frame range
-   - Adjust repeat count (1–50)
-   - Toggle on/off
-
-6. Set **Loop range** (last section, loops forever)
-
-7. Click **Generate SVG**
-
-8. Preview → Click **Download SVG**
-
-9. Upload to **OpenSea**, **Rarible**, or embed on your site!
+1. **Upload** PNG frames (numbered: `1.png`, `2.png`, etc.)
+2. **Set Global FPS** (default: 12)
+3. **Choose Tool**:
+   - **Tool 1**: Add intros → set **final loop** (required)
+   - **Tool 2**: Add sections → entire sequence loops
+4. **Optional**: Enable **Custom FPS** per segment
+5. Click **Generate SVG**
+6. **Preview** → **Download** or **Copy SVG**
+7. Mint on **[ZeroUnbound.Art](https://zerounbound.art)**
 
 ---
 
-## Example Use Case
+## Example: Tool 1
 
-> **Like an animated GIF:**  
-> A man walks into a room, sits down, and takes **3 sips of coffee** → picks up a newspaper → **flicks through pages in an infinite loop**.  
-> *Refresh the page to restart the full animation.*
-
-### How to set it up:
 ```text
-Intro 1: frames 1–5   → Walk in & sit (1×)
-Intro 2: frames 6–8   → Sip coffee (3×)
-Intro 3: frames 9–12  → Pick up newspaper (1×)
-Loop:    frames 13–18 → Page flip (forever)
+Frames: 1–5 (walk), 6–10 (wave), 11–20 (idle)
+→ Intro: 1–5 (walk, 1×, 15 FPS)
+→ Intro: 6–10 (wave, 1×, 24 FPS)
+→ Final Loop: 11–20 (idle, 12 FPS)

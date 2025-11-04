@@ -120,43 +120,28 @@ footer a{color:#4CAF50;text-decoration:none}
   }
 }
   /* DONATION BOX — ALWAYS VISIBLE, NO JS */
-.donation-request {
-  margin: 24px auto !important;
-  max-width: 800px !important;
-  text-align: center !important;
-  font-size: 15px !important;
-  color: #ccc !important;
-  line-height: 1.6 !important;
-  padding: 12px 0 !important;
+/* DONATION ADDRESS — INSIDE .tool-intro */
+.tool-intro .tezos-address {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #4CAF50;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  margin: 8px 0 0 0;
+  cursor: pointer;
+  user-select: all;
+  -webkit-user-select: all;
+  -moz-user-select: all;
+  transition: background 0.2s;
 }
-
-.donation-request p {
-  margin: 0 !important;
+.tool-intro .tezos-address:hover {
+  background: #2a2a2a;
 }
-
-.donation-request .tezos-address {
-  display: inline-block !important;
-  background: #1a1a1a !important;
-  color: #4CAF50 !important;
-  padding: 6px 10px !important;
-  border-radius: 8px !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 14px !important;
-  margin: 8px 0 !important;
-  cursor: pointer !important;
-  user-select: all !important;
-  -webkit-user-select: all !important;
-  -moz-user-select: all !important;
-  transition: background 0.2s ease !important;
-}
-
-.donation-request .tezos-address:hover {
-  background: #2a2a2a !important;
-}
-
-.donation-request .tezos-address:focus {
-  outline: 2px solid #4CAF50 !important;
-  outline-offset: 2px !important;
+.tool-intro .tezos-address:focus {
+  outline: 2px solid #4CAF50;
+  outline-offset: 2px;
 }
 </style>
 </head>
@@ -172,6 +157,11 @@ footer a{color:#4CAF50;text-decoration:none}
     Turn any PNG frame sequence into a <strong>fully on-chain animated SVG</strong> — no code, no hosting, no IPFS. 
     Build <strong>intros + infinite loop</strong> (Tool 1) or <strong>playlist loops</strong> (Tool 2) with <strong>custom FPS per section</strong>. 
     Preview live, copy SVG, mint instantly on <a href="https://zerounbound.art" target="_blank">ZeroUnbound.Art</a>.
+    <br><br>
+    Love this tool? Help <strong>me</strong> keep building with a donation in <strong>XTZ</strong>!<br>
+    <code class="tezos-address" title="Click to select, then Ctrl+C">
+      tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V
+    </code>
   </p>
 </div>
 
@@ -188,13 +178,6 @@ footer a{color:#4CAF50;text-decoration:none}
 </div>
 <!-- END INTRO + VIDEO -->
   <p class="note">Upload PNG frames, set FPS, choose a tool. Tool 1 = intros then required final loop. Tool 2 = playlist (no final loop).</p>
-<!-- DONATION REQUEST -->
-<div class="donation-request">
-  <p>
-    Love this tool? Help <strong>me</strong> keep building with a donation in <strong>XTZ</strong>!<br>
-    <code class="tezos-address">tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V</code>
-  </p>
-</div>
   <div class="card">
     <!-- Upload + Global FPS -->
     <div class="row" style="gap:16px">

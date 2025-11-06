@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SVG Animator</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+<style>
+*{box-sizing:border-box}
+body{font-family:Inter,Segoe UI,system-ui,Arial;background:#0f0f10;color:#eee;margin:0;padding:20px}
+.wrap{max-width:980px;margin:0 auto}
+.note{color:#9aa;font-size:14px;text-align:center;margin-bottom:16px}
+.card{background:#171717;padding:16px;border-radius:12px;border:1px solid #222;box-shadow:0 6px 18px rgba(0,0,0,.6)}
+.row{display:flex;gap:12px;align-items:center}
+.col{flex:1}
+label{display:block;color:#bfbfbf;font-size:13px;margin-bottom:6px}
+.drop{border:2px dashed #2a2a2a;background:#131313;padding:28px;border-radius:10px;text-align:center;cursor:pointer;color:#bfbfbf}
+.drop.dragover{background:#172917;border-color:#3e8c3e;color:#7fe17f}
+input[type=file]{display:none}
+.small{font-size:13px;color:#98a}
+input[type="range"]{width:100%}
+input[type="number"], select{width:100%;padding:8px;border-radius:8px;border:1px solid #2a2a2a;background:#111;color:#fff}
+.toolsRow{display:flex;gap:12px;margin-top:14px}
+.toolBtn{flex:1;padding:12px;border-radius:8px;background:#131313;border:1px solid #242424;color:#ddd;cursor:pointer;text-align:center}
+.toolBtn.active{background:#183018;border-color:#2f6b2f;color:#dfffe1}
+.toolArea{margin-top:12px}
+.intro-panel{background:#141414;border-radius:8px;padding:10px;border:1px solid #232323;margin-top:10px}
+.intro-row{display:flex;gap:8px;align-items:center}
+.repeat-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.fps-row{margin-top:8px;display:none;align-items:center;gap:8px}
+.fps-row label{font-size:13px;color:#bfbfbf;flex:0 0 auto}
+.hold-row{margin-top:4px;margin-bottom:2px;align-items:center;gap:8px}
+.remove{color:#ff8080;cursor:pointer;padding:6px;border-radius:6px;background:transparent}
+.btns{display:flex;gap:10px;margin-top:14px}
+button.primary{flex:1;padding:12px;border-radius:8px;border:0;background:#4CAF50;color:#061;cursor:pointer;font-weight:700}
+button.ghost{flex:1;padding:12px;border-radius:8px;border:1px solid #333;background:transparent;color:#ddd;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.preview{background:#000;border-radius:10px;min-height:380px;margin-top:16px;padding:12px;display:flex;align-items:center;justify-content:center;border:1px solid #222;overflow:hidden}
+.status{margin-top:10px;padding:10px;border-radius:8px;background:#0f0f0f;color:#bdbdbd;text-align:center}
+footer{margin-top:24px;font-size:14px;color:#888;text-align:center}
+footer a{color:#4CAF50;text-decoration:none}
+@media (max-width:720px){
+  .row{flex-direction:column}
+  .toolsRow{flex-direction:column}
+  .btns{flex-direction:column}
+}
+.tool-intro {
+  margin: 16px auto 24px;
+  max-width: 800px;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #ddd;
+}
+.tool-intro p {margin: 0;}
+.tool-intro a {color: #4CAF50;text-decoration: none;}
+.video-container {margin: 0 auto 32px;max-width: 800px;text-align: center;}
+.video-wrapper {position: relative;padding-bottom: 56.25%;height: 0;overflow: hidden;border-radius: 12px;box-shadow: 0 6px 18px rgba(0,0,0,.6);}
+.video-wrapper iframe {position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;}
+.title-image {text-align: center;margin: 16px 0 24px;}
+.title-img {max-width: 100%;width: auto;height: auto;max-height: 140px;border-radius: 16px;box-shadow: 0 8px 24px rgba(0,0,0,.7);display: block;margin: 0 auto;background: #0f0f10;transition: transform 0.2s ease;}
+.title-img:hover {transform: scale(1.02);}
+.sr-only {position: absolute !important;width: 1px !important;height: 1px !important;padding: 0 !important;margin: -1px !important;overflow: hidden !important;clip: rect(0, 0, 0, 0) !important;white-space: nowrap !important;border: 0 !important;}
+.tool-intro .tezos-address {display: inline-block;background: #1a1a1a;color: #4CAF50;padding: 6px 10px;border-radius: 8px;font-family: 'Courier New', monospace;font-size: 14px;margin: 8px 0 0 0;cursor: pointer;user-select: all;transition: background 0.2s;}
+.tool-intro .tezos-address:hover {background: #2a2a2a;}
+.segPrev, .loopPrev {
+  position:relative;
+  margin:16px auto 0;
+  width:128px; height:128px;
+  background:#000;
+  border:2px solid #333;
+  border-radius:12px;
+  overflow:hidden;
+  image-rendering:pixelated;
+  box-shadow:0 6px 12px rgba(0,0,0,.6);
+}
+.loopPrev {border-color:#4CAF50;}
+.prevRefresh {
+  position:absolute;
+  top:4px; right:4px;
+  width:24px; height:24px;
+  background:#4CAF50;
+  border:none;
+  border-radius:6px;
+  color:#000;
+  font-weight:900;
+  font-size:12px;
+  cursor:pointer;
+  opacity:0.9;
+  z-index:10;
+}
+.prevRefresh:hover {opacity:1; transform:scale(1.1);}
+
+/* ==== TOP NAV STYLES ==== */
+.top-nav {
+  position:sticky; top:0; left:0; right:0;
+  background:#0a0a0a; border-bottom:1px solid #2f6b2f;
+  z-index:100; backdrop-filter:blur(6px);
+  padding:8px 0;
+}
+.nav-inner {display:flex;gap:20px;justify-content:center;align-items:center;font-size:15px}
+.nav-link {
+  color:#7fe17f; text-decoration:none; padding:6px 10px;
+  border-radius:6px; transition:all .2s;
+}
+.nav-link:hover {background:#1a3a1a; color:#fff}
+
+/* Anchor scroll offset */
+#tutorial, #donate, #tools, #pro-tips, #faq {scroll-margin-top:70px}
+
+/* ==== DONATE BOX ==== */
+.donate-box h3 {margin:0 0 8px;color:#7fff7f;text-align:center}
+.donate-box code {color:#66d9ef;font-weight:700;font-size:16px}
+
+/* ==== PRO TIPS & FAQ ==== */
+.pro-tips,
+.faq {margin-top:24px;background:#0f1f0f;border:1px solid #2f6b2f;border-radius:12px;padding:16px}
+.pro-tips h2,
+.faq h2 {margin:0 0 14px;font-size:19px;color:#7fff7f;text-align:center}
+.tip-list {display:grid;gap:12px;font-size:15px;line-height:1.45}
+.tip {background:#131313;padding:11px 14px;border-radius:8px;border-left:4px solid #4CAF50;color:#ddd}
+.tip strong {color:#7fff7f}
+.faq-list .faq-item + .faq-item {margin-top:16px}
+.faq-q {background:#1a1a1a;padding:12px 16px;border:1px solid #2a2a2a;border-radius:8px;font-weight:600;color:#dfffe1}
+.faq-a {background:#131313;padding:14px 16px;border:1px solid #222;border-top:0;border-radius:0 0 8px 8px;color:#ddd}
+.faq-a code {background:#0f0f0f;padding:2px 6px;border-radius:4px;font-family:monospace}
+/* Green links inside FAQ only */
+.faq a {
+  color: #4CAF50;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.faq a:hover {
+  color: #7fff7f;
+  text-decoration: underline;
+}
+.faq a:visited {
+  color: #4CAF50;
+}
+.status.info { color: #bdbdbd; }
+.status.error { color: #ff8080; }
+.copy-address {
+  position: relative;
+  display: inline-block;
+}
+
+.copy-address::after {
+  content: 'Copied!';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #237cdb;
+  color: #000;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.copy-address.show-copied::after {
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- ==== TOP NAV ==== -->
+<nav class="top-nav" id="topNav">
+  <div class="wrap nav-inner">
+    <a href="#tutorial" class="nav-link">Tutorial</a>
+    <a href="#donate" class="nav-link">Donate</a>
+    <a href="#tools" class="nav-link">Tools</a>
+    <a href="#pro-tips" class="nav-link">Pro Tips</a>
+    <a href="#faq" class="nav-link">FAQ</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="title-image" role="heading" aria-level="1">
+    <img src="svganimator-logo.svg" alt="SVG Animator – On-Chain Animation Tool" class="title-img">
+    <span class="sr-only">SVG Animator</span>
+  </div>
+
+  <div class="tool-intro">
+    <p>
+      Turn any PNG frame sequence into a <strong>fully on-chain animated SVG</strong> with pixel perfect upscaling — no code, no hosting, no IPFS.
+      Build <strong>intros + infinite loop</strong> (Tool 1) or <strong>playlist loops</strong> (Tool 2) with <strong>custom FPS per section</strong>.
+      Preview live. Copy SVG or Download. Ready to mint on <a href="https://zerounbound.art" target="_blank">ZeroUnbound.Art</a>.
+    </p>
+  </div>
+  <!-- ==== TUTORIAL VIDEO ==== -->
+  <div class="video-container" id="tutorial">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" title="SVG Animator Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+
+<!-- ==== DONATE BOX (with auto-select on click) ==== -->
+<div id="donate" class="donate-box card">
+  <h3>Love this tool? Say thanks with a small donation in XTZ!</h3>
+  <div style="text-align:center">
+    <code onclick="selectText(this)" class="copy-address" style="cursor:pointer;color:#66d9ef;font-weight:700;font-size:16px">
+      tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V
+    </code>
+  </div>
+</div>
+  <p class="note">Upload PNG frames, set FPS, choose a tool. Tool 1 = intros then required final loop. Tool 2 = playlist (no final loop).</p>
+
+  <!-- ==== TOOLS CARD ==== -->
+  <div class="card" id="tools">
+    <div class="row" style="gap:16px">
+      <div class="col">
+        <label>Upload PNG frames (numerical filenames recommended)</label>
+        <div id="drop" class="drop">Drop PNG files here or click to browse</div>
+        <input id="fileInput" type="file" accept="image/png" multiple />
+        <div id="fileInfo" class="small" style="margin-top:8px">No frames loaded</div>
+      </div>
+      <div style="width:220px">
+        <label>Global FPS: <span id="fpsLabel">12</span></label>
+        <input id="fps" type="range" min="1" max="60" value="12" />
+        <div class="small" style="margin-top:8px">Used when a segment has no custom FPS.</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label>Select tool</label>
+      <div class="toolsRow">
+        <div id="toolBtn1" class="toolBtn active">Tool 1 — Intros to Final Loop</div>
+        <div id="toolBtn2" class="toolBtn">Tool 2 — Playlist</div>
+      </div>
+    </div>
+    <div id="toolArea" class="toolArea">
+      <div id="tool1UI">
+        <label>Intros (optional) — ascending, non-overlapping ranges</label>
+        <div id="intros1Container"></div>
+        <div style="margin-top:8px"><button id="addIntro1" class="ghost">+ Add Intro</button></div>
+        <div style="margin-top:12px">
+          <label>Final loop (required) — frames to loop forever after intros</label>
+          <div class="intro-row" style="margin-top:6px">
+            <input id="t1LoopStart" type="number" min="1" value="1" />
+            <div style="align-self:center;color:#9a9a9a">to</div>
+            <input id="t1LoopEnd" type="number" min="1" value="1" />
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="loopUseCustomFps">
+            <label for="loopUseCustomFps" style="font-size:13px;color:#bfbfbf;cursor:pointer">Custom FPS for loop</label>
+          </div>
+          <div id="loopFpsRow" class="fps-row">
+            <label>FPS: <span id="loopFpsVal">12</span></label>
+            <input id="loopCustomFps" type="range" min="1" max="60" value="12" />
+          </div>
+          <div class="loopPrev"><button class="prevRefresh">↻</button></div>
+          <div class="small" style="margin-top:8px">Final loop is required for Tool 1. Generate disabled until valid.</div>
+        </div>
+      </div>
+      <div id="tool2UI" style="display:none">
+        <label>Sections (playlist) — add sections and their repeats. Sequence loops indefinitely.</label>
+        <div id="intros2Container"></div>
+        <div style="margin-top:8px"><button id="addIntro2" class="ghost">+ Add Section</button></div>
+        <div class="small" style="margin-top:8px">Add at least one section to enable Generate.</div>
+      </div>
+    </div>
+    <div class="btns" style="margin-top:14px">
+      <button id="generateBtn" class="primary" disabled>Generate SVG</button>
+      <button id="downloadBtn" class="ghost" disabled>Download SVG</button>
+      <button id="copyBtn" class="ghost" disabled>Copy SVG</button>
+    </div>
+    <div id="status" class="status">Awaiting frames...</div>
+  </div>
+
+  <div id="preview" class="preview"><div style="color:#8f9">Preview appears after Generate</div></div>
+
+  <!-- ==== PRO TIPS ==== -->
+  <div class="pro-tips card" id="pro-tips">
+    <h2>PRO TIPS</h2>
+    <div class="tip-list">
+      <div class="tip">
+        <strong>Hold reduces file size</strong><br>
+        One 30-second pause = a few extra characters<br>
+        Thirty duplicate frames = thirty full PNGs
+      </div>
+      <div class="tip">
+        <strong>Repeat reuses frames</strong><br>
+        Set Repeat = 4 on frames 1-10<br>
+        → 40-frame cycle using only 10 PNGs
+      </div>
+      <div class="tip">
+        <strong>Custom FPS per segment</strong><br>
+        Intro: 6 FPS (slow build-up)<br>
+        Loop: 24 FPS (fast action)
+      </div>
+    </div>
+  </div>
+
+  <!-- ==== FAQ ==== -->
+  <div class="faq card" id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q"><strong>How many frames can I use?</strong></div>
+        <div class="faq-a">
+          Up to 200 frames keeps the tool fast.<br>
+          The only hard limit is the 32 767 px canvas width (≈ 500 frames at 64 px).
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><strong>What image size works best?</strong></div>
+        <div class="faq-a">
+        All frames must be identical.<br>
+        64×64 to 256×256 px = smallest file + crisp pixels.<br>
+        Larger sizes work but increase the final SVG.<br><br>
+        <em>Tip:</em> Name your frames with numeric order hints for best sorting — e.g. <code>frame001.png</code>, <code>frame002.png</code>, etc.
+      </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><strong>Why does my animation stutter?</strong></div>
+        <div class="faq-a">
+          SMIL runs on the main thread.<br>
+          Fix: lower FPS or split into two mints.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><strong>How do I mint my SVG?</strong></div>
+        <div class="faq-a">
+          1. Click Download SVG<br>
+          2. Watch the ZeroUnbound.Art <a href="https://youtu.be/6_AQv7c8qis?si=cYohGbtKegLbi8Ve" target="_blank">Tutorial</a><br>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q"><strong>Can I edit the SVG later?</strong></div>
+        <div class="faq-a">
+          Yes. Open in any text editor and change <code>dur</code>, <code>repeatCount</code>, or the base64 sprite.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Open source tool created by <a href="https://x.com/retro_manni" target="_blank">Retro Manni</a>.<br>
+    You can mint your SVG download fully on-chain via <a href="https://zerounbound.art" target="_blank">ZeroUnbound.Art</a> on the Tezos blockchain.
+  </footer>
+</div>
+<script>
+// ---------------------- GLOBALS ----------------------
+const $ = id => document.getElementById(id);
+const drop = $('drop'), fileInput = $('fileInput'), fps = $('fps'), fpsLabel = $('fpsLabel');
+const fileInfo = $('fileInfo'), statusEl = $('status');
+const toolBtn1 = $('toolBtn1'), toolBtn2 = $('toolBtn2');
+const tool1UI = $('tool1UI'), tool2UI = $('tool2UI');
+const intros1Container = $('intros1Container'), addIntro1 = $('addIntro1');
+const intros2Container = $('intros2Container'), addIntro2 = $('addIntro2');
+const t1LoopStart = $('t1LoopStart'), t1LoopEnd = $('t1LoopEnd');
+const loopUseCustomFps = $('loopUseCustomFps'), loopFpsRow = $('loopFpsRow');
+const loopCustomFps = $('loopCustomFps'), loopFpsVal = $('loopFpsVal');
+const generateBtn = $('generateBtn'), downloadBtn = $('downloadBtn'), copyBtn = $('copyBtn');
+const preview = $('preview');
+let frames = [], svgContent = '', spriteData = '', w = 0, h = 0, activeTool = 1;
+let segCounter = 0;
+// ---------------------- BLOB URL CLEANUP ----------------------
+let __prevUrl = null;
+function setPreview(url) {
+  if (__prevUrl) URL.revokeObjectURL(__prevUrl);
+  __prevUrl = url;
+}
+window.addEventListener('beforeunload', () => {
+  if (__prevUrl) URL.revokeObjectURL(__prevUrl);
+});
+// ---------------------- DRAG & DROP ----------------------
+['dragenter','dragover','dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault(); e.stopPropagation();}));
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, ()=>drop.classList.add('dragover')));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, ()=>drop.classList.remove('dragover')));
+drop.addEventListener('click', ()=>fileInput.click());
+drop.addEventListener('drop', e => handleFiles(Array.from(e.dataTransfer.files || [])));
+fileInput.addEventListener('change', ()=>handleFiles(Array.from(fileInput.files || [])));
+async function handleFiles(list){
+  const pngs = list.filter(f=>f && f.type==='image/png');
+  if(!pngs.length){ setStatus('No PNG images found','error'); return; }
+  await loadFrames(pngs);
+}
+// ---------------------- LOAD FRAMES ----------------------
+async function loadFrames(files){
+  generateBtn.disabled = downloadBtn.disabled = copyBtn.disabled = true;
+  setStatus('Loading frames…', 'info');
+  frames=[]; segCounter = 0;
+  files.sort((a,b)=> (Number((a.name.match(/(\d+)(?!.*\d)/)||[])[0]||0) - Number((b.name.match(/(\d+)(?!.*\d)/)||[])[0]||0)));
+  let width=null,height=null;
+  for(let i=0;i<files.length;i++){
+    const f = files[i];
+    const data = await fileToDataURL(f);
+    const size = await imageSizeFromDataURL(data);
+    if(width===null){ width=size.w; height=size.h; }
+    else if(size.w!==width || size.h!==height){ setStatus(`Frame size mismatch: ${f.name}`,'error'); frames=[]; return; }
+    frames.push({data});
+    setStatus(`Loaded ${i+1}/${files.length} frames`,'info');
+  }
+  w = width; h = height;
+  fileInfo.textContent = `Loaded ${frames.length} frames — ${w}×${h}px`;
+  if(frames.length>200) setStatus('Warning: >200 frames may slow things down','info');
+  else setStatus('Set final loop range to generate (intros optional)','info');
+
+// Set defaults
+updateAllMaxes();
+t1LoopStart.value = 1;
+t1LoopEnd.value = frames.length;
+
+// Build sprite first
+const ok = await buildSprite();
+if(!ok) return; // Stop if sprite failed
+
+// Now validate and refresh previews
+validateAll();
+document.querySelectorAll('.intro-panel').forEach(refreshOne);
+refreshLoop();
+
+}
+// -------------------
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+function imageSizeFromDataURL(data){ return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res({w:img.width,h:img.height}); img.onerror=rej; img.src=data; }); }
+// ---------------------- SPRITE SHEET ----------------------
+async function buildSprite(){
+  generateBtn.disabled = true;
+  setStatus('Building sprite sheet…', 'info');
+  const totalW = w*frames.length;
+  if(totalW > 32767){ setStatus('Too many frames for canvas!','error'); return false; }
+  const canvas = document.createElement('canvas'); canvas.width=totalW; canvas.height=h;
+  const ctx = canvas.getContext('2d', {alpha:true}); ctx.imageSmoothingEnabled=false;
+  for(let i=0;i<frames.length;i++){
+    await drawToCanvas(ctx, frames[i].data, i*w, 0);
+  }
+  spriteData = canvas.toDataURL('image/png');
+  return true;
+}
+function drawToCanvas(ctx,url,x,y){ return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ctx.drawImage(img,x,y); res();}; img.onerror=rej; img.src=url; }); }
+// ---------------------- TOOL SWITCH ----------------------
+function setActiveTool(n){
+  activeTool=n;
+  toolBtn1.classList.toggle('active', n===1);
+  toolBtn2.classList.toggle('active', n===2);
+  tool1UI.style.display = (n===1?'block':'none');
+  tool2UI.style.display = (n===2?'block':'none');
+  validateAll();
+}
+toolBtn1.addEventListener('click', ()=>setActiveTool(1));
+toolBtn2.addEventListener('click', ()=>setActiveTool(2));
+// ---------------------- PANEL CREATION ----------------------
+function createPanel(container){
+  const panel = document.createElement('div');
+  panel.className='intro-panel';
+  panel.dataset.segId = `seg_${segCounter++}`;
+  panel.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+      <strong>${activeTool===1?'Intro':'Section'} ${panel.dataset.segId.split('_')[1]}</strong>
+      <span class="remove">Remove</span>
+      <button class="reverseBtn">Reverse</button>
+    </div>
+    <div class="intro-row" style="margin-top:8px">
+      <input type="number" class="start" min="1" value="1">
+      <div style="align-self:center;color:#9a9a9a">to</div>
+      <input type="number" class="end" min="1" value="1">
+    </div>
+    <div class="repeat-row">
+      <label style="font-size:13px;color:#bfbfbf">Repeat <span class="repVal">1</span> time(s)</label>
+      <input type="range" class="rep" min="1" max="50" value="1">
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+      <input type="checkbox" class="useCustomFps">
+      <label style="font-size:13px;color:#bfbfbf;cursor:pointer">Custom FPS</label>
+    </div>
+    <div class="fps-row">
+      <label>FPS: <span class="customFpsVal">12</span></label>
+      <input type="range" class="customFps" min="1" max="60" value="12">
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+      <input type="checkbox" class="holdLast">
+      <label style="font-size:13px;color:#bfbfbf;cursor:pointer">Hold last frame</label>
+    </div>
+    <div class="hold-row" style="display:none">
+      <label style="font-size:13px;color:#bfbfbf">for</label>
+      <input type="number" class="holdSec" min="0" max="60" value="2" step="0.1" style="width:70px">
+      <label style="font-size:13px;color:#bfbfbf">seconds</label>
+    </div>
+    <div class="segPrev"><button class="prevRefresh">↻</button></div>
+  `;
+  
+  container.appendChild(panel);
+
+  const start = panel.querySelector('.start');
+  const end = panel.querySelector('.end');
+  const rep = panel.querySelector('.rep');
+  const repVal = panel.querySelector('.repVal');
+  const useCustom = panel.querySelector('.useCustomFps');
+  const fpsRow = panel.querySelector('.fps-row');
+  const customFps = panel.querySelector('.customFps');
+  const customFpsVal = panel.querySelector('.customFpsVal');
+  const holdCheck = panel.querySelector('.holdLast');
+  const holdRow = panel.querySelector('.hold-row');
+  const refreshBtn = panel.querySelector('.prevRefresh');
+  const reverseBtn = panel.querySelector('.reverseBtn');
+
+  // Event listeners
+  useCustom.addEventListener('change', ()=> fpsRow.style.display = useCustom.checked?'flex':'none');
+  customFps.addEventListener('input', ()=> customFpsVal.textContent = customFps.value);
+  rep.addEventListener('input', ()=> repVal.textContent = rep.value);
+  holdCheck.addEventListener('change', ()=> holdRow.style.display = holdCheck.checked?'flex':'none');
+  [start,end].forEach(i => i.addEventListener('input', ()=>{
+    validateAll();
+    i.style.borderColor = (+i.value<1 || +i.value>frames.length)?'#ff8080':'';
+  }));
+  panel.querySelector('.remove').addEventListener('click', ()=> { panel.remove(); updateAllMaxes(); validateAll(); });
+  refreshBtn.addEventListener('click', ()=> refreshOne(panel));
+  
+  // Reverse button swaps start and end
+  reverseBtn.addEventListener('click', ()=>{
+    const temp = start.value;
+    start.value = end.value;
+    end.value = temp;
+    validateAll();
+    refreshOne(panel);
+  });
+
+  updateAllMaxes(); 
+  validateAll();
+}
+  
+addIntro1.addEventListener('click', ()=>createPanel(intros1Container));
+addIntro2.addEventListener('click', ()=>createPanel(intros2Container));
+// ---------------------- LOOP REFRESH (delegated) ----------------------
+document.querySelector('.loopPrev')?.addEventListener('click', e => {
+  if(e.target.matches('.prevRefresh')) refreshLoop();
+});
+// ---------------------- REFRESH ONE SEGMENT ----------------------
+async function refreshOne(panel){
+  if(!spriteData) return;
+  const s=+panel.querySelector('.start').value-1;
+  const e=+panel.querySelector('.end').value-1;
+  const rep=+panel.querySelector('.rep').value;
+  const fpsVal=panel.querySelector('.useCustomFps').checked ? +panel.querySelector('.customFps').value : +fps.value;
+  const hold=panel.querySelector('.holdLast').checked ? (+panel.querySelector('.holdSec').value||0) : 0;
+  const values=[];
+const step = s <= e ? 1 : -1;
+for(let r = 0; r < rep; r++){
+  for(let f = s; step > 0 ? f <= e : f >= e; f += step){
+    values.push(-f * w);
+  }
+}
+  const frameDur=1/fpsVal;
+  let dur=values.length*frameDur;
+  let anim=`<animate attributeName="x" values="${values.join(';')}" dur="${dur.toFixed(3)}s" calcMode="discrete" repeatCount="1" fill="freeze"/>`;
+  if(hold>0){
+  anim+=`<animate attributeName="x" values="${values[values.length-1]};${values[values.length-1]}" dur="${hold}s" begin="${dur.toFixed(3)}s" fill="freeze"/>`;
+}
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:pixelated">
+  <defs>
+    <clipPath id="frameClip">
+      <rect x="0" y="0" width="${w}" height="${h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frameClip)">
+    <image href="${spriteData}" width="${w*frames.length}" height="${h}" x="0" y="0">${anim}</image>
+  </g>
+</svg>`;
+  let obj=panel.querySelector('.segPrev object');
+  if(!obj){ obj=document.createElement('object'); obj.style.cssText='width:100%;height:100%'; panel.querySelector('.segPrev').appendChild(obj); }
+  if(obj.__url) URL.revokeObjectURL(obj.__url);
+  obj.__url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+  obj.data=obj.__url;
+}
+// ---------------------- REFRESH FINAL LOOP ----------------------
+async function refreshLoop(){
+  if(!spriteData) return;
+  const s=+t1LoopStart.value-1, e=+t1LoopEnd.value-1;
+  const fpsVal=loopUseCustomFps.checked ? +loopCustomFps.value : +fps.value;
+  const values=[]; const step = s <= e ? 1 : -1;
+for(let f = s; step > 0 ? f <= e : f >= e; f += step) values.push(-f*w);
+  const dur=(values.length/fpsVal).toFixed(3);
+  const anim = `<animate attributeName="x" values="${values.join(';')}" dur="${dur}s" calcMode="discrete" repeatCount="indefinite"/>`;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:pixelated">
+  <defs>
+    <clipPath id="frameClip">
+      <rect x="0" y="0" width="${w}" height="${h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frameClip)">
+    <image href="${spriteData}" width="${w*frames.length}" height="${h}" x="0" y="0">${anim}</image>
+  </g>
+</svg>`;
+  let obj=document.querySelector('.loopPrev object');
+  if(!obj){ obj=document.createElement('object'); obj.style.cssText='width:100%;height:100%'; document.querySelector('.loopPrev').appendChild(obj); }
+  if(obj.__url) URL.revokeObjectURL(obj.__url);
+  obj.__url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+  obj.data=obj.__url;
+}
+// ---------------------- FULL GENERATE ----------------------
+generateBtn.addEventListener('click', async()=>{
+  if(!await buildSprite()) return;
+  let anims=''; let beginTime='0s';
+  const globalFps=+fps.value;
+  if(activeTool===1){
+    for(const p of intros1Container.children){
+      const s=+p.querySelector('.start').value-1, e=+p.querySelector('.end').value-1;
+      const rep=+p.querySelector('.rep').value;
+      const fpsVal=p.querySelector('.useCustomFps').checked?+p.querySelector('.customFps').value:globalFps;
+let values = [];
+const step = s <= e ? 1 : -1;
+for(let r=0; r<rep; r++){
+  for(let f = s; step > 0 ? f <= e : f >= e; f += step){
+    values.push(-f*w);
+  }
+}
+      const dur=(values.length/fpsVal).toFixed(3);
+      const segId=p.dataset.segId;
+      anims+=`<animate id="${segId}" attributeName="x" values="${values.join(';')}" dur="${dur}s" calcMode="discrete" repeatCount="1" begin="${beginTime}"/>`;
+      if(p.querySelector('.holdLast').checked && +p.querySelector('.holdSec').value>0){
+        const hold=+p.querySelector('.holdSec').value;
+        const holdId=`hold_${segId}`;
+        anims+=`<animate id="${holdId}" attributeName="x" values="${values[values.length-1]};${values[values.length-1]}" dur="${hold}s" begin="${segId}.end"/>`;
+        beginTime=`${holdId}.end`;
+      }else beginTime=`${segId}.end`;
+    }
+const fS = +t1LoopStart.value - 1, fE = +t1LoopEnd.value - 1;
+const fFps = loopUseCustomFps.checked ? +loopCustomFps.value : globalFps;
+const finalValues = [];
+const step = fS <= fE ? 1 : -1;
+for (let f = fS; step > 0 ? f <= fE : f >= fE; f += step) finalValues.push(-f*w);
+const finalDur = (finalValues.length / fFps).toFixed(3);
+    anims+=`<animate attributeName="x" values="${finalValues.join(';')}" dur="${finalDur}s" calcMode="discrete" repeatCount="indefinite" begin="${beginTime}"/>`;
+  }else{
+    const seq=[]; let total=0;
+    for(const p of intros2Container.children){
+      const s=+p.querySelector('.start').value-1, e=+p.querySelector('.end').value-1;
+      const rep=+p.querySelector('.rep').value;
+      const fpsVal=p.querySelector('.useCustomFps').checked?+p.querySelector('.customFps').value:globalFps;
+      const hold=p.querySelector('.holdLast').checked?(+p.querySelector('.holdSec').value||0):0;
+      for(let r=0;r<rep;r++){
+      const step = s <= e ? 1 : -1;
+for (let f = s; step > 0 ? f <= e : f >= e; f += step) {
+    seq.push({f, d:1/fpsVal});
+    total += 1/fpsVal;
+}
+
+        if(r===rep-1 && hold>0){ seq.push({f:e, d:hold}); total+=hold; }
+      }
+    }
+    const values=seq.map(x=>-x.f*w);
+    const keyTimes = [];
+    let acc = 0;
+    for (let i = 0; i < seq.length; i++) {
+      if (i > 0) acc += seq[i - 1].d;
+      keyTimes.push((acc / total).toFixed(8));
+    }
+    anims=`<animate attributeName="x" values="${values.join(';')}" dur="${total.toFixed(3)}s" keyTimes="${keyTimes.join(';')}" calcMode="discrete" repeatCount="indefinite"/>`;
+  }
+  svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="image-rendering:pixelated">
+  <defs>
+    <clipPath id="frameClip">
+      <rect x="0" y="0" width="${w}" height="${h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frameClip)">
+    <image href="${spriteData}" width="${w*frames.length}" height="${h}" x="0" y="0">
+      ${anims}
+    </image>
+  </g>
+</svg>`;
+  const url = URL.createObjectURL(new Blob([svgContent], {type: 'image/svg+xml'}));
+  setPreview(url);
+  preview.innerHTML=`<object type="image/svg+xml" data="${url}" style="width:100%;height:100%;image-rendering:pixelated;"></object>`;
+  document.querySelectorAll('.intro-panel').forEach(refreshOne);
+  refreshLoop();
+  downloadBtn.disabled=false; copyBtn.disabled=false;
+  setStatus('Full SVG + all tiny previews updated!','info');
+  generateBtn.disabled=false;
+});
+// ---------------------- REST OF ORIGINAL CODE ----------------------
+function updateAllMaxes(){
+  const max=frames.length||1;
+  document.querySelectorAll('.intro-panel .start, .intro-panel .end').forEach(i=>{ i.max=max; if(+i.value>max) i.value=max; });
+  t1LoopStart.max=max; t1LoopEnd.max=max;
+  if(+t1LoopStart.value<1) t1LoopStart.value=1;
+  if(+t1LoopEnd.value<1) t1LoopEnd.value=Math.min(max,+t1LoopEnd.value||1);
+}
+function validateAll(){
+  fpsLabel.textContent = fps.value;
+  if(!frames.length){ generateBtn.disabled = true; setStatus('Upload frames first','error'); return; }
+
+  if(activeTool === 1){
+    const lS = +t1LoopStart.value, lE = +t1LoopEnd.value;
+if (!(lS >= 1 && lS <= frames.length && lE >= 1 && lE <= frames.length)) {
+  generateBtn.disabled = true;
+  setStatus('Final loop frames out of range','error');
+  return;
+}
+    // Only validate intros if there are any
+    if(intros1Container.children.length > 0 && !validateList(intros1Container)) return;
+  } else {
+    if(!intros2Container.children.length){ 
+      generateBtn.disabled = true; 
+      setStatus('Add a section','error'); 
+      return; 
+    }
+    if(!validateList(intros2Container)) return;
+  }
+
+  generateBtn.disabled = false;
+  setStatus('Ready to generate!','info');
+}
+
+function validateList(c){
+  if(c.children.length === 0) return true;
+  let lastEnd = 0;
+  for (const p of c.children){
+    const s = +p.querySelector('.start').value;
+    const e = +p.querySelector('.end').value;
+
+    // Basic validation
+    if(isNaN(s) || isNaN(e) || s < 1 || s > frames.length || e < 1 || e > frames.length){
+      setStatus(`Frame must be 1–${frames.length}`, 'error');
+      return false;
+    }
+
+    // Check for overlapping segments
+    const segStart = Math.min(s,e);
+    const segEnd = Math.max(s,e);
+    if(segStart <= lastEnd){
+      setStatus('Overlapping ranges', 'error');
+      return false;
+    }
+    lastEnd = segEnd;
+  }
+  return true;
+}
+
+downloadBtn.addEventListener('click', ()=>{ if(!svgContent) return; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([svgContent],{type:'image/svg+xml'})); a.download='svg-animation.svg'; a.click(); setStatus('Downloaded','info'); });
+copyBtn.addEventListener('click', async()=>{ try{await navigator.clipboard.writeText(svgContent); setStatus('Copied!','info');}catch(e){setStatus('Copy failed','error');} });
+function setStatus(m, l = 'info') {
+  statusEl.textContent = m;
+  statusEl.className = 'status';
+  statusEl.classList.add(l);
+}
+fps.addEventListener('input', ()=> fpsLabel.textContent=fps.value);
+loopUseCustomFps.addEventListener('change', ()=>loopFpsRow.style.display=loopUseCustomFps.checked?'flex':'none');
+loopCustomFps.addEventListener('input', ()=> loopFpsVal.textContent=loopCustomFps.value);
+t1LoopStart.addEventListener('input', validateAll);
+t1LoopEnd.addEventListener('input', validateAll);
+// Final loop live red border feedback
+[t1LoopStart, t1LoopEnd].forEach(input => {
+  input.addEventListener('input', () => {
+    const val = +input.value;
+    const max = frames.length;
+    input.style.borderColor = (val < 1 || val > max) ? '#ff8080' : '';
+  });
+});
+// ---- Reverse button for Tool 1 final loop ----
+const t1LoopReverse = document.createElement('button');
+t1LoopReverse.textContent = 'Reverse';
+t1LoopReverse.id = 't1LoopReverse';
+t1LoopReverse.style.marginLeft = '6px';
+t1LoopReverse.style.padding = '4px 8px';
+t1LoopReverse.style.borderRadius = '6px';
+t1LoopReverse.style.background = '#4CAF50';
+t1LoopReverse.style.color = '#000';
+t1LoopReverse.style.cursor = 'pointer';
+
+// Append it next to the final loop inputs
+t1LoopEnd.parentNode.appendChild(t1LoopReverse);
+
+// Add click event
+t1LoopReverse.addEventListener('click', () => {
+  const temp = t1LoopStart.value;
+  t1LoopStart.value = t1LoopEnd.value;
+  t1LoopEnd.value = temp;
+  validateAll();
+  refreshLoop();
+});
+setActiveTool(1);
+function selectText(el) {
+  // Select text
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // Copy to clipboard
+  const text = el.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    // Visual feedback: flash + tooltip
+    el.classList.add('show-copied');
+    setTimeout(() => el.classList.remove('show-copied'), 1000);
+  }).catch(err => {
+    console.warn('Clipboard copy failed:', err);
+  });
+}
+</script>
+</body>
+</html>

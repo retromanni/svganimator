@@ -143,27 +143,53 @@ footer a{color:#4CAF50;text-decoration:none}
 .copy-address {
   position: relative;
   display: inline-block;
+  max-width: 100%;
+  word-break: break-all; /* Use break-all for clean breaking of long strings */
+  cursor: pointer;
+  user-select: all;
+  background: #1a1a1a;
+  color: #66d9ef;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+  transition: background 0.2s;
 }
 
+.copy-address:hover {
+  background: #2a2a2a;
+}
+
+/* Tooltip */
 .copy-address::after {
   content: 'Copied!';
   position: absolute;
-  top: -28px;
+  top: -32px;
   left: 50%;
   transform: translateX(-50%);
   background: #237cdb;
   color: #000;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
+  z-index: 10;
 }
 
 .copy-address.show-copied::after {
   opacity: 1;
+}
+  @media (max-width: 720px) {
+  .copy-address {
+    font-size: 14px;
+    padding: 5px 8px;
+  }
 }
 </style>
 </head>
@@ -210,9 +236,9 @@ footer a{color:#4CAF50;text-decoration:none}
 <div id="donate" class="donate-box card">
   <h3>Love this tool? Say thanks with a small donation in XTZ!</h3>
   <div style="text-align:center">
-    <code onclick="selectText(this)" class="copy-address" style="cursor:pointer;color:#66d9ef;font-weight:700;font-size:16px">
-      tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V
-    </code>
+    <code onclick="selectText(this)" class="copy-address">
+  tz1aow6UTrgAoHUTxoZ61uHAXksvgxUtXf2V
+</code>
   </div>
 </div>
   <p class="note">Upload PNG frames, set FPS, choose a tool. Tool 1 = intros then required final loop. Tool 2 = playlist loop.</p>
